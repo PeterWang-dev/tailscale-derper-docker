@@ -1,7 +1,7 @@
 services:
   tailscale-derper:
     container_name: tailscale-derper
-    image: tailscale-derper
+    image: ghcr.io/peterwang-dev/tailscale-derper-docker:latest
     # same Dockerfile the CI builds and pushes (ghcr.io/<repo>:latest)
     build: .
     restart: always
