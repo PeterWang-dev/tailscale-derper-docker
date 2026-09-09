@@ -1,0 +1,33 @@
+services:
+  tailscale-derper:
+    container_name: tailscale-derper
+    image: tailscale-derper
+    # same Dockerfile the CI builds and pushes (ghcr.io/<repo>:latest)
+    build: .
+    restart: always
+    # network_mode: host
+    network_mode: bridge
+    ports:
+      # manual/IP mode HTTPS
+      - "12345:12345/tcp"
+      # letsencrypt/domain mode: 443 TLS, 80 ACME HTTP-01 challenge
+      - "443:443/tcp"
+      - "80:80/tcp"
+      # STUN
+      - "3478:3478/udp"
+    environment:
+      # server IP literal or domain; cert mode is picked from it automatically
+      - DERP_HOST=${DERP_HOST:?set DERP_HOST to the server IP or domain}
+      # manual | letsencrypt | auto (default)
+      - DERP_CERTMODE=auto
+      # per-mode defaults: manual -> :12345 / -1, letsencrypt -> :443 / 80
+      # letsencrypt requires :443 (autocert) and inbound port 80
+      # - DERP_ADDR=:443
+      # - DERP_HTTP_PORT=80
+      - DERP_CERTS=/app/certs
+      - DERP_STUN=true
+      - DERP_VERIFY_CLIENTS=false
+    volumes:
+      # self-signed cert (stable sha256-raw) or ACME cert cache;
+      # custom certs: place <hostname>.crt/.key in ./certs on the host
+      - ./certs:/app/certs
